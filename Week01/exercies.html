@@ -68,18 +68,16 @@
     let activeInede2 = 0
     const sleep = (duration) => {
       return new Promise((resolve, reject) => {
-        setTimeout(resolve, duration * 100)
+        setTimeout(resolve, duration * 1000)
       })
     }
 
-    setColor2 = async(light, index) => {
+    const setColor2 = async(light, index) => {
       const { time, color } = light
       const light2 = document.getElementsByClassName('light2')[index]
       light2.style.background = color
       await sleep(time)
       light2.style.background = '#eee'
-
-
     }
 
     const main = async() => {
@@ -90,6 +88,48 @@
      }
     }
     main()
+
+    
+
+    /****/
+    const green = () => {}
+    const red = () => {}
+    const yellow = () => {}
+
+    const go = () => {
+      green()
+      sleep(10000).then(() => {
+        yellow()
+        return sleep(2000)
+      }).then(() => {
+        red()
+        return sleep(500)
+      }).then(() => {
+        go()
+      })
+    }
+
+    function* go1() {
+      green()
+      yield sleep(10000)
+      yellow()
+      yield sleep(2000)
+      red()
+      yield sleep(5000)
+
+    }
+
+    function run(iterator) {
+      const { done, value } = iterator
+      if(done) {
+        return
+      }
+      if(value instanceof Promise){
+        value.then(() => {
+          run(iterator)
+        })
+      }
+    }
 
   </script>
   
