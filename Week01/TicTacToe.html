@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>TicTacToe</title>
+</head>
+<body>
+  <style>
+    body {
+      text-align: center;
+    }
+    .cell {
+      width: 100px;
+      height: 100px;
+      background: green;
+      border: 1px solid #fff;
+      display: inline-block;
+      font-size: 50px;
+      text-align: center;
+      line-height: 100px;
+      vertical-align: middle;
+
+    }
+  </style>
+  <div id="board"></div>
+  <script>
+    let pattern = [
+      [0, 0, 0],
+      [0, 0, 0],
+      [0, 0, 0]
+    ]
+    const piece = {
+      1: '⭕️',
+      2: '❌'
+    }
+
+    const choiseResult = {
+      '-1': '输了',
+      0: '平局',
+      1: '赢了'
+    }
+
+
+    let color = 1
+
+    function show(stop=false) {
+      const board = document.getElementById('board')
+      board.innerText = ''
+
+      pattern.forEach((line, i) => {
+        line.forEach((td, j) => {
+          let cell = document.createElement('div')
+          cell.classList.add('cell')
+          cell.innerText = piece[td] || ''
+          if( !piece[td] && !stop) {
+            cell.addEventListener('click', () => move(i, j))
+          }
+
+          board.appendChild(cell)
+        } )
+        board.appendChild(document.createElement('br'))
+      })
+    }
+
+    function move(x, y) {
+      pattern[x][y] = color
+      judge(x, y, true)
+    }
+
+    function computedMove() {
+      const { point } = bestChoise(pattern, color)
+      if(point) {
+      let [x, y] = point
+        pattern[x][y] = color
+        judge(x, y)
+      }
+
+    }
+
+    function judge(x, y, next=false) {
+      let stop = false
+      if(check(pattern, color, x, y)) {
+        win()
+       stop = true
+
+      }
+      color = color === 1 ? 2 : 1
+      if(willWin(pattern, color)) {
+        console.log(`${piece[color]} will win`)
+      } 
+
+      show(stop)
+      if(next && !stop) {
+        computedMove()
+      }
+
+    }
+
+    function check(pattern, color, x, y) {
+      let win = false
+
+      // x 轴固定
+      win = pattern[x].every((column) => column === color)
+      if(win) {
+        return win
+      }
+
+      // y轴固定
+      win = pattern.every((row) => row[y] === color)
+      if(win) {
+        return win
+      }
+
+      // 斜线 
+      win = pattern.every((row, index) => row[index] === color)
+      if(win) { 
+        return win
+      }
+
+      win = pattern.every((row, index) => row[2-index] === color)
+      if(win){ 
+        return win
+      }
+    }
+    function clonePattern(pattern) {
+      return JSON.parse(JSON.stringify(pattern))
+    }
+
+    function willWin(pattern, color) {
+      let point = null
+      pattern.forEach((item, i) =>{
+        item.forEach((cell, j) => {
+          if(cell === 0) {
+            let temp = clonePattern(pattern)
+            temp[i][j] = color
+            if(check(temp, color, i, j)) {
+              point = [i, j]
+            }
+          }
+        })
+      })
+
+      return point
+    }
+
+    function win() {
+      const div = document.createElement('div')
+      div.innerHTML = `${piece[color]} win`
+      document.body.appendChild(div)
+      
+      let button = document.createElement('button')
+      button.innerHTML = `重新开始`
+      button.addEventListener('click', () => {
+        pattern = [
+          [0, 0, 0],
+          [0, 0, 0],
+          [0, 0, 0]
+        ]
+        document.body.removeChild(div)
+        document.body.removeChild(button)
+        show()
+      })
+      document.body.appendChild(button)
+     
+
+    }
+    function bestChoise(pattern, color) {
+      let point = willWin(pattern, color)
+      if(point) {
+        return {
+          point,
+          result: 1
+        }
+      }
+      let result = -2
+
+      pattern.forEach((item, i) =>{
+         item.forEach((cell, j) => {
+          if(cell == 0) {
+            let temp = clonePattern(pattern)
+            temp[i][j] = color
+            const r = bestChoise(temp, color === 1 ? 2: 1).result 
+            if(-r > result) {
+              result = -r
+              point = [i, j]
+            }
+            
+          } 
+        })
+      })
+      return {
+        point,
+        result: point ? result : 0
+      }
+     
+    }
+
+   show()
+</script>
+</body>
+</html>
