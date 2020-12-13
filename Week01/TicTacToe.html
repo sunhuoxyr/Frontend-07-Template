@@ -28,19 +28,18 @@
     let pattern = [
       [0, 0, 0],
       [0, 0, 0],
-      [0, 0, 0]
+      [0, 0, 0],
     ]
     const piece = {
+      0: '',
       1: '⭕️',
-      2: '❌'
+      2: '❌',
     }
-
     const choiseResult = {
-      '-1': '输了',
-      0: '平局',
-      1: '赢了'
+      0: '输了',
+      1: '平局',
+      2: '赢了',
     }
-
 
     let color = 1
 
@@ -52,7 +51,7 @@
         line.forEach((td, j) => {
           let cell = document.createElement('div')
           cell.classList.add('cell')
-          cell.innerText = piece[td] || ''
+          cell.innerText = piece[td]
           if( !piece[td] && !stop) {
             cell.addEventListener('click', () => move(i, j))
           }
@@ -63,6 +62,7 @@
       })
     }
 
+
     function move(x, y) {
       pattern[x][y] = color
       judge(x, y, true)
@@ -71,20 +71,20 @@
     function computedMove() {
       const { point } = bestChoise(pattern, color)
       if(point) {
-      let [x, y] = point
+        let [x, y] = point
         pattern[x][y] = color
         judge(x, y)
       }
-
     }
 
     function judge(x, y, next=false) {
       let stop = false
+
       if(check(pattern, color, x, y)) {
         win()
-       stop = true
-
+        stop = true
       }
+
       color = color === 1 ? 2 : 1
       if(willWin(pattern, color)) {
         console.log(`${piece[color]} will win`)
@@ -94,7 +94,6 @@
       if(next && !stop) {
         computedMove()
       }
-
     }
 
     function check(pattern, color, x, y) {
@@ -162,38 +161,42 @@
         show()
       })
       document.body.appendChild(button)
-     
-
     }
+
+
     function bestChoise(pattern, color) {
       let point = willWin(pattern, color)
       if(point) {
         return {
           point,
-          result: 1
+          result: 2
         }
       }
       let result = -2
-
       pattern.forEach((item, i) =>{
-         item.forEach((cell, j) => {
+        item.forEach((cell, j) => {
           if(cell == 0) {
             let temp = clonePattern(pattern)
             temp[i][j] = color
             const r = bestChoise(temp, color === 1 ? 2: 1).result 
-            if(-r > result) {
+            /**
+              * A > B > A ... 循环执行
+              * -r 保证 
+              *   A是正值: 0, 1, 2 
+              *   B是负值: 0, -1, -2 
+              * 意味着值越大时，A的落子越好
+              */
+            if(-r >= result) {
               result = -r
               point = [i, j]
             }
-            
           } 
         })
       })
       return {
         point,
-        result: point ? result : 0
+        result: point ? result : 1
       }
-     
     }
 
    show()

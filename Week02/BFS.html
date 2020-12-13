@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Document</title>
+</head>
+<body>
+  <style>
+    .cell {
+      background: gray;
+      border-right: 1px solid #fff;
+      border-bottom: 1px solid #fff;
+      height: 6px;
+      width: 6px;
+      display: inline-block;
+    }
+    #container {
+      font-size: 0;
+      width: 701px;
+    }
+    button {
+      margin-top: 10px;
+      color: #fff;
+    }
+
+    .success {
+      background: green;
+    }
+    .clear {
+      background: red;
+    }
+  </style>
+
+  <div id="container"></div>
+  <!-- <button onclick="save()" class="success">保存</button>
+  <button onclick="clearMap()" class="clear">清除</button> -->
+    <div>
+      <label for="point-x"> x坐标</label>
+      <input type="number" value="50" id="point-x" >
+    </div>
+    <div>
+      <label for="point-y"> y坐标</label>
+      <input type="number" value="50" id="point-y">
+    </div>
+  <button class="success" onclick="BFS()">绘制路径</button>
+  <script>
+    let map = localStorage['map'] ? JSON.parse(localStorage['map']) : Array(10000).fill(0)
+    const container = document.getElementById('container')
+
+    let mousedown = false
+    let clear = false
+
+
+    document.addEventListener('mousedown', (e) => {
+      mousedown = true
+      clear = e.which === 3
+    })
+
+    document.addEventListener('mouseup', () => {
+      mousedown = false
+    })
+
+    document.addEventListener('contextmenu', (e) => e.preventDefault())
+
+
+
+    const drawMap = function () {
+    
+
+      for(let x = 0; x < 100; x++) {
+        for(let y = 0; y < 100; y++ ) {
+          const cell = document.createElement('div')
+          cell.classList.add('cell')
+          const index = 100 * x + y
+          if(map[index] === 1) {
+            cell.style.backgroundColor = 'black'
+          }
+
+          cell.addEventListener('mousemove', () => {
+            if(mousedown) {
+              if(clear) {
+                map[index] = 0
+                cell.style.backgroundColor = 'gray'
+              } else {
+                map[index] = 1
+                cell.style.backgroundColor = 'black'
+              }
+            }
+
+          })
+
+          container.appendChild(cell)
+        }
+      }
+    }
+
+    const save = () => {
+      localStorage['map'] = JSON.stringify(map)
+    }
+
+    const clearMap = () => {
+      localStorage.removeItem('map')
+      map = Array(10000).fill(0)
+      container.innerHTML = ''
+      drawMap()
+    }
+
+    function sleep (t) {
+      return new Promise((resolve, reject) => {
+        setTimeout(resolve, t)
+      })
+    }
+
+    function getEnd() {
+      const endX = Number(document.getElementById('point-x').value)
+      const endY = Number(document.getElementById('point-y').value)
+      const end = [endX, endY ]
+      container.children[endX + 100 * endY ].style.backgroundColor = 'red'
+      return end
+    }
+
+    async function BFS() {
+      let queue = [[0, 0]]
+      const table = Object.create(map)
+      const end = getEnd()
+   
+      const insert = async (x, y, pre) => {
+        if(x < 0 || x >= 100 || y < 0 || y >= 100) {
+          return
+        }
+
+        const index =  x + y * 100
+        if(map[index]) {
+          return
+        }
+
+        container.children[index].style.backgroundColor = 'lightgreen'
+        table[index] = pre
+        map[index] = 2
+        queue.push([x, y])
+        await sleep(0)
+
+      }
+
+      while(queue.length) {
+        let [x, y] = queue.shift()
+
+        if(x == end[0] && y == end[1]) {
+          queue = []
+          drawPath(x, y, table)
+          return 
+        }
+
+
+        await insert(x, y - 1, [x, y])
+        await insert(x + 1, y, [x, y])
+        await insert(x, y + 1, [x, y])
+        await insert(x - 1, y, [x, y])
+        await insert(x + 1, y - 1, [x, y])
+        await insert(x + 1, y + 1, [x, y])
+        await insert(x - 1, y + 1, [x, y])
+        await insert(x - 1, y - 1, [x, y])
+      }
+
+    }
+
+    function drawPath(x, y, table) {
+      while(x !== 0 || y !== 0) {
+        [x, y] = table[x + y * 100]
+        container.children[x + y * 100].style.backgroundColor = 'purple'
+      }
+    }
+
+    drawMap()
+
+  </script>
+</body>
+</html>

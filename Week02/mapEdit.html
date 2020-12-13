@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Document</title>
+</head>
+<body>
+  <style>
+    .cell {
+      background: gray;
+      border-right: 1px solid #fff;
+      border-bottom: 1px solid #fff;
+      height: 6px;
+      width: 6px;
+      display: inline-block;
+    }
+    #container {
+      font-size: 0;
+    }
+    button {
+      margin-top: 10px;
+      color: #fff;
+    }
+
+    .success {
+      background: green;
+    }
+    .clear {
+      background: red;
+    }
+  </style>
+
+  <div id="container"></div>
+  <button onclick="save()" class="success">保存</button>
+  <button onclick="clearMap()" class="clear">清除</button>
+  <script>
+    let map = localStorage['map'] ? JSON.parse(localStorage['map']) : Array(10000).fill(0)
+    const container = document.getElementById('container')
+
+    let mousedown = false
+    let clear = false
+
+    document.addEventListener('mousedown', (e) => {
+      mousedown = true
+      clear = e.which === 3
+    })
+
+    document.addEventListener('mouseup', () => {
+      mousedown = false
+    })
+
+    document.addEventListener('contextmenu', (e) => e.preventDefault())
+
+
+
+    const drawMap = function () {
+    
+
+      for(let x = 0; x < 100; x++) {
+        for(let y = 0; y < 100; y++ ) {
+          const cell = document.createElement('div')
+          cell.classList.add('cell')
+          const index = 100 * x + y
+          if(map[index] === 1) {
+            cell.style.backgroundColor = 'black'
+          }
+
+          cell.addEventListener('mousemove', () => {
+            if(mousedown) {
+              if(clear) {
+                map[index] = 0
+                cell.style.backgroundColor = 'gray'
+              } else {
+                map[index] = 1
+                cell.style.backgroundColor = 'black'
+              }
+            }
+
+          })
+
+          container.appendChild(cell)
+        }
+        const br = document.createElement('br')
+        container.appendChild(br)
+      }
+    }
+
+    const save = () => {
+      localStorage['map'] = JSON.stringify(map)
+    }
+    const clearMap = () => {
+      localStorage.removeItem('map')
+      map = Array(10000).fill(0)
+      container.innerHTML = ''
+      drawMap()
+    }
+
+    drawMap()
+
+  </script>
+</body>
+</html>
