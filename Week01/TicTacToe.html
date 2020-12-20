@@ -24,75 +24,64 @@
     }
   </style>
   <div id="board"></div>
+  <div id="footer"></div>
   <script>
     let pattern = [
       [0, 0, 0],
       [0, 0, 0],
       [0, 0, 0],
     ]
-    const piece = {
-      0: '',
-      1: '⭕️',
-      2: '❌',
-    }
-    const choiseResult = {
-      0: '输了',
-      1: '平局',
-      2: '赢了',
-    }
+    const piece = new Map([
+      [0, ''],
+      [1, '⭕️'],
+      [2, '❌']
+    ])
+    const choiseResult = new Map([
+      [-1, '输棋'],
+      [0, '平棋'],
+      [1, '赢棋']
+    ])
+
 
     let color = 1
 
-    function show(stop=false) {
-      const board = document.getElementById('board')
-      board.innerText = ''
+    const drawCheckerBoard  = () => {
+      const border = document.getElementById('board')
+      border.innerText = ''
 
-      pattern.forEach((line, i) => {
-        line.forEach((td, j) => {
-          let cell = document.createElement('div')
+      pattern.forEach((row, i) => {
+        row.forEach((column, j) => {
+          const cell = document.createElement('div')
           cell.classList.add('cell')
-          cell.innerText = piece[td]
-          if( !piece[td] && !stop) {
-            cell.addEventListener('click', () => move(i, j))
-          }
-
-          board.appendChild(cell)
-        } )
-        board.appendChild(document.createElement('br'))
+          cell.id = `${i}-${j}`
+          cell.innerText = piece.get(column)
+          border.appendChild(cell)
+        })
+        const br = document.createElement('br')
+        border.appendChild(br)
       })
+
+      border.addEventListener('click', playChess)
     }
 
-
-    function move(x, y) {
+    function playChess(event) {
+      const { target } = event
+      const [x, y] = target.id.split('-')
+      if(x === undefined || y === undefined) {
+        return
+      }
+      target.innerText = piece.get(color)
       pattern[x][y] = color
       judge(x, y, true)
     }
 
-    function computedMove() {
+    function computedPlay() {
       const { point } = bestChoise(pattern, color)
       if(point) {
         let [x, y] = point
         pattern[x][y] = color
+        document.getElementById(`${x}-${y}`).innerText = piece.get(color)
         judge(x, y)
-      }
-    }
-
-    function judge(x, y, next=false) {
-      let stop = false
-
-      if(check(pattern, color, x, y)) {
-        win()
-        stop = true
-      }
-
-      color = color === 1 ? 2 : 1
-      if(willWin(pattern, color)) {
-        console.log(`${piece[color]} will win`)
-      } 
-
-      show(stop)
-      if(next && !stop) {
-        computedMove()
       }
     }
 
@@ -101,67 +90,88 @@
 
       // x 轴固定
       win = pattern[x].every((column) => column === color)
-      if(win) {
-        return win
-      }
 
       // y轴固定
-      win = pattern.every((row) => row[y] === color)
-      if(win) {
-        return win
-      }
+      win = win || pattern.every((row) => row[y] === color)
 
       // 斜线 
-      win = pattern.every((row, index) => row[index] === color)
-      if(win) { 
-        return win
+      win = win || pattern.every((row, index) => row[index] === color)
+      win = win || pattern.every((row, index) => row[2-index] === color)
+      
+      return win
+    }
+
+    function refresh() {
+      pattern = [
+        [0, 0, 0],
+        [0, 0, 0],
+        [0, 0, 0]
+      ]
+      const footer = document.getElementById('footer')
+
+      footer.innerText = ''
+      drawCheckerBoard()
+    }
+
+    function win() {
+      const footer = document.getElementById('footer')
+
+      const div = document.createElement('div')
+      div.innerText = `${piece.get(color)} win`
+      footer.appendChild(div)
+      
+      let button = document.createElement('button')
+      button.innerText = `重新开始`
+      button.addEventListener('click', refresh)
+      footer.appendChild(button)
+    }
+
+    function removeBorderEvent() {
+      const board = document.getElementById('board')
+      board.removeEventListener('click',  playChess)
+    }
+
+
+    function judge(x, y, next = false) {
+      if(check(pattern, color, x, y)) {
+        win()
+        removeBorderEvent()
+        return
       }
 
-      win = pattern.every((row, index) => row[2-index] === color)
-      if(win){ 
-        return win
+      color = color === 1 ? 2 : 1
+      if(willWin(pattern, color)) {
+        console.log(`${piece.get(color)} will win`)
+      } 
+      if(next) {
+        computedPlay()
+
       }
     }
+
+  
     function clonePattern(pattern) {
       return JSON.parse(JSON.stringify(pattern))
     }
 
     function willWin(pattern, color) {
-      let point = null
-      pattern.forEach((item, i) =>{
-        item.forEach((cell, j) => {
+      let y = -1
+      const x = pattern.findIndex((item, i) =>{
+         y = item.findIndex((cell, j) => {
           if(cell === 0) {
             let temp = clonePattern(pattern)
             temp[i][j] = color
-            if(check(temp, color, i, j)) {
-              point = [i, j]
-            }
+            return check(temp, color, i, j)
           }
+          return false
         })
+        return y !== -1
       })
 
-      return point
+      return  x === -1 ? null : [x, y]
     }
 
-    function win() {
-      const div = document.createElement('div')
-      div.innerHTML = `${piece[color]} win`
-      document.body.appendChild(div)
-      
-      let button = document.createElement('button')
-      button.innerHTML = `重新开始`
-      button.addEventListener('click', () => {
-        pattern = [
-          [0, 0, 0],
-          [0, 0, 0],
-          [0, 0, 0]
-        ]
-        document.body.removeChild(div)
-        document.body.removeChild(button)
-        show()
-      })
-      document.body.appendChild(button)
-    }
+
 
 
     function bestChoise(pattern, color) {
@@ -169,37 +179,31 @@
       if(point) {
         return {
           point,
-          result: 2
+          result: 1
         }
       }
       let result = -2
       pattern.forEach((item, i) =>{
-        item.forEach((cell, j) => {
+        item.findIndex((cell, j) => {
           if(cell == 0) {
             let temp = clonePattern(pattern)
             temp[i][j] = color
             const r = bestChoise(temp, color === 1 ? 2: 1).result 
-            /**
-              * A > B > A ... 循环执行
-              * -r 保证 
-              *   A是正值: 0, 1, 2 
-              *   B是负值: 0, -1, -2 
-              * 意味着值越大时，A的落子越好
-              */
             if(-r >= result) {
               result = -r
-              point = [i, j]
+              return true
             }
           } 
+          return false
         })
       })
       return {
         point,
-        result: point ? result : 1
+        result: point ? result : 0
       }
     }
 
-   show()
+    drawCheckerBoard()
 </script>
 </body>
 </html>
