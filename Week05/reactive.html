@@ -85,6 +85,7 @@
         return obj[prop]
       },
       get(obj, prop) {
+
         usedReactivities.push([obj, prop])
         if(typeof obj[prop] === 'object') {
           return reactive(obj[prop])

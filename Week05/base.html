@@ -1,0 +1,31 @@
+<style>
+  .pallet {
+    width: 100px;
+    height: 100px;
+  }
+</style>
+
+<input type="range" id="r" min="0" max="255" step="1">
+<input type="range" id="g" min="0" max="255" step="1">
+<input type="range" id="b" min="0" max="255" step="1">
+
+<div class="pallet" id="pallet"></div>
+
+<script>
+const object = {
+  r: 0,
+  g: 0,
+  b: 0,
+  a: {c: 2}
+};
+
+const idArr = ['r', 'g', 'b']
+
+idArr.forEach(id => {
+  document.getElementById(id).addEventListener('input', (event) => {
+    object[id] = event.target.value;
+    document.getElementById('pallet').style.backgroundColor = `rgb(${object.r}, ${object.g}, ${object.b})`;
+  })
+})
+
+</script>

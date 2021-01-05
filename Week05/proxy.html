@@ -1,0 +1,86 @@
+<style>
+  .pallet {
+    width: 100px;
+    height: 100px;
+  }
+</style>
+
+<input type="range" id="r" min="0" max="255" step="1">
+<input type="range" id="g" min="0" max="255" step="1">
+<input type="range" id="b" min="0" max="255" step="1">
+
+<div class="pallet" id="pallet"></div>
+
+<script>
+const object = {
+  r: 0,
+  g: 0,
+  b: 0,
+  a: {c: 2}
+};
+
+const idArr = ['r', 'g', 'b']
+
+/**
+ * proxy 模拟 vue 3.0
+ * reactive
+ * effect
+ */ 
+
+const callbacks = new Map(); // 对象 => 属性 =>回调函数; 保证 effect 按需执行
+let usedReactivities = [];
+const reactivities = new Map(); // 防止重复代理
+
+
+const effect = (callback) => {
+  usedReactivities = []
+  callback()
+
+  usedReactivities.forEach(reactivity => {
+    if(!callbacks.has(reactivity[0])) {
+      callbacks.set(reactivity[0], new Map())
+    }
+    if(!callbacks.get(reactivity[0]).has(reactivity[1])) {
+      callbacks.get(reactivity[0]).set(reactivity[1], [])
+    }
+    callbacks.get(reactivity[0]).get(reactivity[1]).push(callback)
+  })
+}
+
+const reactive = (object) => {
+  if(reactivities.has(object)) {
+    return reactivities.get(object)
+  }
+
+  const proxy = new Proxy(object, {
+    set(obj, prop, value) {
+      obj[prop] = value
+      if(callbacks.get(obj) && callbacks.get(obj).get(prop)) {
+        callbacks.get(obj).get(prop).forEach(callback => callback())
+      }
+      return obj[prop]
+    },
+    get(obj, prop) {
+      usedReactivities.push([obj, prop])
+      return obj[prop]
+    },
+  })
+  reactivities.set(object, proxy)
+  return proxy
+}
+
+const po = reactive(object)
+
+idArr.forEach(id => {
+  const dom = document.getElementById(id)
+  dom.addEventListener('input', (event) => {
+    po[id] = event.target.value;
+  });
+  effect(() => dom.value = po[id] )
+}) 
+
+effect(() => 
+  document.getElementById('pallet').style.backgroundColor = `rgb(${po.r}, ${po.g}, ${po.b})`
+)
+
+</script>
