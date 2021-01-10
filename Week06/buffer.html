@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Document</title>
+</head>
+<body>
+    
+  <script>
+    function buffer(code) {
+      let encoding = code.charCodeAt().toString(2)
+      let reverse = [...encoding].reverse()
+      let length = reverse.length
+      if(length <= 8) { 
+        reverse.length = 8
+        const result = reverse.fill(0, length).reverse().join('')
+        return result
+      }
+      if(length <= 11) {
+        let arr = reverse.splice(0, 6)
+         const result1 = `10${arr.reverse().join('')}`
+        length = reverse.length
+        reverse.length = 5
+        const result2 = `110${reverse.fill(0, length).reverse().join('')}`
+        return `${result1}, ${result2}`
+      }
+      if(length <= 16) {
+        let arr = reverse.splice(0, 6)
+        let result = `10${arr.reverse().join('')}`
+        arr = reverse.splice(0, 6)
+        result = `10${arr.reverse().join('')}, ${result}`
+        length = reverse.length
+        reverse.length = 4
+        result= `1110${reverse.fill(0, length).reverse().join('')}, ${result}`
+        return result
+      }
+
+
+    }
+
+
+  </script>
+</body>
+</html>

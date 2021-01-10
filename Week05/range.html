@@ -1,0 +1,13 @@
+<p>First paragraph.</p>
+<p>Second paragraph.</p>
+<p>Third paragraph.</p>
+<p>Fourth paragraph.</p>
+
+<script>
+  const range = document.createRange();
+  const startNode = document.getElementsByTagName('p')[1].childNodes[0];
+  const startOffset = 10;
+  range.setStart(startNode, startOffset)
+  
+
+</script>

@@ -37,7 +37,7 @@ LR算法
 递归
 
 <Expression>::=
-<AdditiveExpression><EOF>  //  End Of Line
+<AdditiveExpression><EOF>  //  End Of File
 
 <AdditiveExpression>::=
 	<MultiplicativeExpression> // 特殊的加法
@@ -59,4 +59,4 @@ Number ⇒ 乘法，Number * 1
 
 表达式 ⇒ 加法
 
-顺序
+顺序 

@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Document</title>
+</head>
+<body>
+  <script>
+    /**
+     * 解析 '1024 + 10 * 25'
+     * 
+     */
+    const Dictionary = ['Number', 'Whitespace', 'LineTerminator', '+', '-', '*', '/'];
+    const Regexp = /([\d.]+)|([ \t]+)|([\n\r]+)|(\*)|(\/)|(\+)|(\-)/g
+
+    /**
+     * 词法分析
+     * 解析 souce, 返回所属的字典类型
+     * 生成器对象是由 generator 函数返回的，可迭代
+     */
+    function tokenize(source) {
+      let result = [];
+      while(true) {
+        const match = Regexp.exec(source);
+        if(!match) {
+          result.push({
+            type: 'EOF'
+          })
+          break;
+        }
+        const type = Dictionary.find((item, index) => match[index + 1])
+        result.push({
+          value: match[0],
+          type,
+        })
+      }
+      return result;
+    }
+
+    function dataProcessing(source) {
+      const result = tokenize(source).filter(item => (item.type !== 'Whitespace' && item.type !== 'LineTerminator'));
+
+    }
+  </script>
+</body>
+</html>
