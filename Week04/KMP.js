@@ -63,6 +63,10 @@ function kmpOriginal(params) {
 
 
 function kmp(source, str) {
+  if(str === '') {
+    return 0
+  } 
+
   let table = new Array(str.length).fill(0);
   const calcTable = () => {
     let value = 0;
@@ -73,7 +77,7 @@ function kmp(source, str) {
         index++;
       } else {
         if(value > 0) {
-          value = 0
+          value = table[value-1]
         } else {
           index++;
         }
@@ -81,7 +85,6 @@ function kmp(source, str) {
     }
   }
   calcTable()
-  console.log(table)
 
   const calcIndex =() => {
     let tableIndex = 0;
@@ -93,7 +96,7 @@ function kmp(source, str) {
         tableIndex++
       } else {
         if(tableIndex > 0) {
-          tableIndex = table[tableIndex]
+          tableIndex = table[tableIndex - 1]
         } else {
           index++
         }
@@ -105,8 +108,7 @@ function kmp(source, str) {
     }
     return -1
   }
-
-  console.log(calcIndex())
+  return calcIndex()
 }
 
-kmp(newStr, str)
+kmp('1', '')
